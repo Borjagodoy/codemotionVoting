@@ -47,13 +47,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       cvitaede-starsrating {
         --star-color:#F00;
       }
+      .hasVote {
+        color: #0F0;
+      }
+      .hasNotVote {
+        color: #F00;
+      }
     </style>
 
     <firebase-document
       path="/charlas/[[charlaId]]"
       data="{{charla}}">
     </firebase-document>
-
+    
+    <firebase-document
+      path="/pre-charlas/[[email]]/[[charlaId]]"
+      data="{{vote}}">
+      </firebase-document>
+      
     <div class="card">
       <template is="dom-if" if="{{!voteFinish}}">
         <div class="flexlayer">
@@ -67,9 +78,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <template is="dom-if" if="{{charla}}">
           <div class="flexlayer">
             <div class="flex1">Tu voto:</div>
-            <cvitaede-starsrating num-stars="5" mode="manual"></cvitaede-starsrating>
+            <cvitaede-starsrating num-stars="5" rating$="{{vote}}" mode="manual"></cvitaede-starsrating>
           </div>
+          <div class$="{{hasValorate(vote)}}"> <h3> Esta charla {{getVote(vote)}}</h3></div>
           <h3>{{charla.Titulo}} <span>de</span> <span class="autor">{{charla.Autor}}</span></h3>
+
           <h6>
             Tipo: <span class="autor">{{charla.Proposal_format}}</span> 
             Lenguajes: <span class="autor">{{charla.Programming_language}}</span>
@@ -115,6 +128,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           charlaNum: {
             type:Number,
             value: 1
+          },
+          vote:{
+            type:String
           },
           voteFinish: {
             type: Boolean,
@@ -179,6 +195,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
+      hasValorate(vote){
+       return typeof vote === 'number' ? 'hasVote' : 'hasNotVote';
+      }
+
       connectedCallback() { 
         super.connectedCallback();
         Polymer.RenderStatus.afterNextRender(this, function() {
@@ -188,9 +208,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
 
           var email = this.user.email.replace(/[@\.]/g,"_");
+          this.set('email', email);
           console.log(email);
           firebase.database().ref('/pre-charlas').child(email).once('value').then( (snapshot) => {
             var votos = Object.keys(snapshot.val());
+            console.log(votos);
             if (votos) {
               var lastCharlaVoted = Math.max(...votos) + 1;
               this.charlaId=lastCharlaVoted;
@@ -226,8 +248,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             target.reset();
           }, 300);
         });
+      } 
+      getVote(vote) {
+        return typeof vote === 'number' ? `la has valorado con ${vote} estrellas` : `aun no la has valorado`;
       }
-
       _calcVotes() {
         var email = this.user.email.replace(/[@\.]/g,"_");
         firebase.database().ref().child('charlas').once('value').then( (snapshot) => {

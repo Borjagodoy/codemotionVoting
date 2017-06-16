@@ -53,8 +53,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
       <template is="dom-if" if="{{charlas.length}}">
         <table>
-        <template is="dom-repeat" items="{{charlas}}" as="charla">
-          <tr><td>{{index}}</td><td>{{charla.Titulo}}</td><td>{{charla.Votos}}</td></tr>
+        <tr><td>Posición</td><td>Titulo</td><td>Votos</td></tr>
+        <template is="dom-repeat" items="{{charlas}}" as="charla" sort="{{_sortByResult}}">
+          <tr><td>{{getNumberTalk(index)}}</td><td>{{charla.Titulo}}</td><td>{{charla.Votos}}</td></tr>
         </template>
         </table>
       </template>
@@ -77,6 +78,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       dataChanged(newData, oldData) {
         // do something when the query returns values
         //console.log(newData, oldData);
+      }
+      _sortByResult(a, b) {
+        return b.Votos > a.Votos ? 1 : -1;
+      }
+
+      getNumberTalk(index) {
+        return index + 1;
       }
 
     }
